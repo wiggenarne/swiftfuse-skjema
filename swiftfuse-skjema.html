@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swift Fuse — Bestillingsskjema</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C0392B;
+    --red-dark: #96281B;
+    --red-light: #E74C3C;
+    --bg: #0D0D0D;
+    --bg2: #141414;
+    --bg3: #1A1A1A;
+    --border: rgba(255,255,255,0.07);
+    --text: #F0EDE8;
+    --text-muted: #888;
+    --text-dim: #555;
+    --gold: #C9A84C;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .logo {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 2px;
+    background: var(--red);
+  }
+
+  /* Tab selector */
+  .tab-wrap {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 48px;
+    background: var(--bg2);
+  }
+  .tab {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .tab.active {
+    background: var(--red);
+    color: #fff;
+  }
+  .tab:not(.active):hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* Form title */
+  .form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .form-title span { color: var(--red); }
+
+  .form-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Field */
+  .field {
+    margin-bottom: 18px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 7px;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 13px 16px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-dim); }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--red);
+    background: var(--bg3);
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+  }
+  select option { background: #1a1a1a; }
+
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+  /* Checkbox group */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--bg2);
+  }
+  .check-item:hover { border-color: rgba(192,57,43,0.4); }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-item.checked {
+    border-color: var(--red);
+    background: rgba(192,57,43,0.1);
+  }
+  .check-box {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--text-dim);
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+  }
+  .check-item.checked .check-box {
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .check-item.checked .check-box::after {
+    content: '';
+    width: 9px;
+    height: 5px;
+    border-left: 1.5px solid #fff;
+    border-bottom: 1.5px solid #fff;
+    transform: rotate(-45deg) translateY(-1px);
+    display: block;
+  }
+  .check-label {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  /* Radio group */
+  .radio-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .radio-pill {
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--bg2);
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .radio-pill:hover { color: var(--text); border-color: rgba(192,57,43,0.4); }
+  .radio-pill.selected {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    padding: 18px 24px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover { background: var(--red-light); }
+  .submit-btn:active { transform: scale(0.99); }
+
+  .note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+  }
+
+  /* Form panels */
+  .form-panel { display: none; animation: fadeUp 0.3s ease; }
+  .form-panel.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Success */
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+    animation: fadeUp 0.4s ease;
+  }
+  .success-msg.show { display: block; }
+  .success-icon {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+  }
+  .success-icon svg { width: 24px; height: 24px; stroke: var(--red); }
+  .success-msg h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  .success-msg p { color: var(--text-muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">Swift Fuse AS</div>
+
+  <!-- Tab selector -->
+  <div class="tab-wrap">
+    <button class="tab active" onclick="switchTab('eiendom', this)">🏠 Eiendomsfilm</button>
+    <button class="tab" onclick="switchTab('bil', this)">🚗 Bilfilm</button>
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  <div class="success-msg" id="successMsg">
+    <div class="success-icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Bestilling mottatt!</h2>
+    <p>Arne tar kontakt innen kort tid.<br>Sjekk innboksen for bekreftelse.</p>
+  </div>
+
+  <!-- EIENDOM FORM -->
+  <div class="form-panel active" id="panel-eiendom">
+    <div class="form-title">Eiendoms<span>film</span></div>
+    <p class="form-subtitle">Fyll ut skjemaet under — jo mer info, desto mindre frem-og-tilbake og raskere ferdig video.</p>
+
+    <form onsubmit="handleSubmit(event, 'eiendom')">
+
+      <div class="section">
+        <div class="section-label">Kontakt</div>
+        <div class="field">
+          <label>Navn</label>
+          <input type="text" name="navn" placeholder="Ola Nordmann" required>
+        </div>
+        <div class="field">
+          <label>E-post</label>
+          <input type="email" name="epost" placeholder="ola@megler.no" required>
+        </div>
+        <div class="field">
+          <label>Telefon</label>
+          <input type="tel" name="telefon" placeholder="+47 000 00 000">
+        </div>
+        <div class="field">
+          <label>Meglerfirma / Privatperson</label>
+          <input type="text" name="firma" placeholder="Krogsveen, DNB Eiendom, Privatperson...">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Boligen</div>
+        <div class="field">
+          <label>Adresse</label>
+          <input type="text" name="adresse" placeholder="Steinbekkåsen 31, Oslo" required>
+        </div>
+        <div class="field">
+          <label>Er boligen møblert under filming?</label>
+          <div class="radio-row" id="moblert-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'moblert-group')">Ja, møblert</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'moblert-group')">Nei, tom</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'moblert-group')">Begge deler</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Fokusområder i videoen</div>
+        <div class="field">
+          <label>Hvilke rom/områder skal prioriteres? (velg alle relevante)</label>
+          <div class="check-grid" id="rom-grid">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Stue</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Kjøkken</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Soverom</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Bad</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Gang/entre</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">TV-stue</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Baksiden/hage</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Drone/utside</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Terrasse/balkong</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Er det noe som IKKE skal vises? (f.eks. inngangsparti, spesifikke rom)</label>
+          <input type="text" name="unngaa" placeholder="F.eks. inngangspartiet, gangen i kjeller...">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Video-stil</div>
+        <div class="field">
+          <label>Ønsket varighet</label>
+          <div class="radio-row" id="varighet-group">
+            <div class="radio-pill" onclick="selectRadio(this, 'varighet-group')">30 sek</div>
+            <div class="radio-pill selected" onclick="selectRadio(this, 'varighet-group')">45–60 sek</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'varighet-group')">60–90 sek</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'varighet-group')">Valgfritt</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Format</label>
+          <div class="radio-row" id="format-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'format-group')">Liggende (16:9)</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'format-group')">Stående (9:16 – reels)</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'format-group')">Begge</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Spesielle effekter / stil-ønsker</label>
+          <div class="check-grid">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Møbler popper inn</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Gardiner som blåser</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Zoom-inn effekt</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Before/after</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Tekst-overlay</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Logo i videoen</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Branding & Lyd</div>
+        <div class="field">
+          <label>Tekst som skal vises i videoen (f.eks. adresse, pris)</label>
+          <input type="text" name="overlay_tekst" placeholder="Steinbekkåsen 31 — Nå på markedet">
+        </div>
+        <div class="field">
+          <label>Font-farge / merkevare</label>
+          <div class="radio-row" id="font-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'font-group')">Hvit</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'font-group')">Rød (som logo)</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'font-group')">Annen (beskriv under)</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Musikk-ønsker</label>
+          <input type="text" name="musikk" placeholder="F.eks. rolig, energisk, 'Lift You Up' av LÉON, ingen musikk...">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Bilder & Tilgang</div>
+        <div class="field">
+          <label>Visningsdato</label>
+          <input type="text" name="visningsdato" placeholder="F.eks. Lørdag 10. mai kl. 12:00">
+        </div>
+        <div class="field">
+          <label>Hvor skal videoen brukes?</label>
+          <div class="check-grid">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Instagram</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Facebook</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Finn.no</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Nettside</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Internt / presentasjon</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Link til bilder (Google Drive, Dropbox, WeTransfer e.l.)</label>
+          <input type="url" name="bildelink" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="field">
+          <label>Link til logo-fil (PNG/SVG med transparent bakgrunn)</label>
+          <input type="url" name="logolink" placeholder="https://drive.google.com/... eller dropp om du ikke har">
+        </div>
+        <div class="field">
+          <label>Tilleggsinformasjon / spesielle ønsker</label>
+          <textarea name="notater" placeholder="Skriv gjerne hva du vil fremheve, hva som er unikt med boligen, eller andre ønsker..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Send bestilling →</button>
+      <p class="note">Arne tar kontakt innen 24 timer.</p>
+    </form>
+  </div>
+
+  <!-- BIL FORM -->
+  <div class="form-panel" id="panel-bil">
+    <div class="form-title">Bil<span>film</span></div>
+    <p class="form-subtitle">Gi oss informasjonen vi trenger for å levere en reel som selger bilen — uten én eneste revisjonsrunde.</p>
+
+    <form onsubmit="handleSubmit(event, 'bil')">
+
+      <div class="section">
+        <div class="section-label">Kontakt</div>
+        <div class="field">
+          <label>Navn</label>
+          <input type="text" name="navn" placeholder="Kenneth Høitomt" required>
+        </div>
+        <div class="field">
+          <label>E-post</label>
+          <input type="email" name="epost" placeholder="kenneth@bilforhandler.no" required>
+        </div>
+        <div class="field">
+          <label>Telefon</label>
+          <input type="tel" name="telefon" placeholder="+47 000 00 000">
+        </div>
+        <div class="field">
+          <label>Forhandler / Firma</label>
+          <input type="text" name="firma" placeholder="Høitomt Auto AS, Privatselger...">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Bilen</div>
+        <div class="field">
+          <label>Bilens merke, modell og årsmodell</label>
+          <input type="text" name="bil" placeholder="Ford Mustang 1969, blå metallic" required>
+        </div>
+        <div class="field">
+          <label>Pris (valgfritt, vises i video om ønsket)</label>
+          <input type="text" name="pris" placeholder="kr 450 000">
+        </div>
+        <div class="field">
+          <label>Type bil</label>
+          <div class="radio-row" id="biltype-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'biltype-group')">Personbil</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'biltype-group')">SUV</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'biltype-group')">Klassiker / Spesialbil</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'biltype-group')">Varebil</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'biltype-group')">Annet</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Hva skal fremheves</div>
+        <div class="field">
+          <label>Velg fokus-punkter (velg alle relevante)</label>
+          <div class="check-grid">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Eksteriør</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Interiør</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Motor / ytelse</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Felger / detaljer</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Unike trekk ved bilen</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Logo / merke</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Hva er det BESTE med denne bilen? (selgerpitch)</label>
+          <textarea name="pitch" placeholder="F.eks. Originalt lakkert, aldri registrert i Norge, perfekt stand..."></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Video-stil</div>
+        <div class="field">
+          <label>Stemning / stil</label>
+          <div class="radio-row" id="stil-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'stil-group')">Luksuriøs / cinematic</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'stil-group')">Rå / muskuløs</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'stil-group')">Retro / nostalgisk</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'stil-group')">Ren / minimalistisk</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Format</label>
+          <div class="radio-row" id="bil-format-group">
+            <div class="radio-pill" onclick="selectRadio(this, 'bil-format-group')">Liggende (16:9)</div>
+            <div class="radio-pill selected" onclick="selectRadio(this, 'bil-format-group')">Stående (9:16 – reels)</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'bil-format-group')">Begge</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Musikk-ønsker</label>
+          <input type="text" name="musikk" placeholder="F.eks. hard rock, ambient, spesifikk sang...">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Branding & Bilder</div>
+        <div class="field">
+          <label>Tekst som skal vises i videoen</label>
+          <input type="text" name="overlay_tekst" placeholder="Ford Mustang '69 — kr 450 000">
+        </div>
+        <div class="field">
+          <label>Logo / branding i video?</label>
+          <div class="radio-row" id="bil-logo-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'bil-logo-group')">Ja</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'bil-logo-group')">Nei</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Hvor skal videoen brukes?</label>
+          <div class="check-grid">
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Instagram</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Facebook</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Finn.no</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Nettside</span></div>
+            <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Internt / presentasjon</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Link til bilder / video-klipp</label>
+          <input type="url" name="bildelink" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="field">
+          <label>Link til logo-fil (PNG/SVG med transparent bakgrunn)</label>
+          <input type="url" name="logolink" placeholder="https://drive.google.com/... eller dropp om du ikke har">
+        </div>
+        <div class="field">
+          <label>Andre ønsker eller info</label>
+          <textarea name="notater" placeholder="Spesielle vinkler, ønsker, ting å unngå..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Send bestilling →</button>
+      <p class="note">Arne tar kontakt innen 24 timer.</p>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(type, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + type).classList.add('active');
+    document.getElementById('successMsg').classList.remove('show');
+  }
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+  }
+
+  function selectRadio(el, groupId) {
+    document.querySelectorAll('#' + groupId + ' .radio-pill, .' + groupId + ' .radio-pill').forEach(p => p.classList.remove('selected'));
+    // Use parent node
+    el.parentNode.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  async function handleSubmit(e, type) {
+    e.preventDefault();
+    const form = e.target;
+    const btn = form.querySelector('.submit-btn');
+    btn.textContent = 'Sender...';
+    btn.disabled = true;
+
+    const data = new FormData(form);
+    const obj = { skjema_type: type === 'eiendom' ? 'Eiendomsfilm' : 'Bilfilm' };
+    data.forEach((v, k) => { if (v) obj[k] = v; });
+
+    // Collect checkboxes
+    const panel = document.getElementById('panel-' + type);
+    const checked = [...panel.querySelectorAll('.check-item.checked .check-label')].map(el => el.textContent.trim());
+    if (checked.length) obj['fokus_valgt'] = checked.join(', ');
+
+    // Collect radio pills
+    panel.querySelectorAll('.radio-row').forEach(row => {
+      const sel = row.querySelector('.radio-pill.selected');
+      if (sel && row.id) obj[row.id] = sel.textContent.trim();
+    });
+
+    try {
+      const res = await fetch('https://formspree.io/f/meenavwg', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(obj)
+      });
+
+      if (res.ok) {
+        document.getElementById('panel-' + type).classList.remove('active');
+        const msg = document.getElementById('successMsg');
+        msg.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        btn.textContent = 'Noe gikk galt — prøv igjen';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      btn.textContent = 'Noe gikk galt — prøv igjen';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
