@@ -654,7 +654,8 @@
 </div>
 
 <script>
-  function switchTab(type, btn) {
+  // Gjør alle funksjoner globale eksplisitt
+  window.switchTab = function(type, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
@@ -662,8 +663,7 @@
     document.getElementById('successMsg').classList.remove('show');
   }
 
-  function toggleCheck(el) {
-    // Finn alltid parent .check-item
+  window.toggleCheck = function(el) {
     const item = el.closest('.check-item');
     if (!item) return;
     item.classList.toggle('checked');
@@ -671,14 +671,14 @@
     cb.checked = item.classList.contains('checked');
   }
 
-  function selectRadio(el, groupId) {
+  window.selectRadio = function(el, groupId) {
     document.querySelectorAll('#' + groupId + ' .radio-pill, .' + groupId + ' .radio-pill').forEach(p => p.classList.remove('selected'));
     // Use parent node
     el.parentNode.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
   }
 
-  async function handleSubmit(e, type) {
+  window.handleSubmit = async function(e, type) {
     e.preventDefault();
     const form = e.target;
     const btn = form.querySelector('.submit-btn');
@@ -738,5 +738,4 @@
       { tittel: 'HVA SKAL FREMHEVES', felt: [
         ['Fokus', obj['fokus_valgt']], ['Selgerpitch', obj['pitch']]
       ]},
-      { tittel: 'VIDEO-STIL', felt: [
-        ['Stemning', obj['stil-gr
+      { tittel: 'VIDEO-STIL
