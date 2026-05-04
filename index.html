@@ -697,50 +697,46 @@
       if (sel && row.id) obj[row.id] = sel.textContent.trim();
     });
 
-    // Lesbar e-post-oppsummering
+    // Ryddig HTML e-post
     const navn = obj['navn'] || '?';
     const adresse = obj['adresse'] || obj['bil'] || '?';
     obj['_subject'] = `Ny bestilling: ${obj['skjema_type']} — ${adresse} (${navn})`;
-    const lines = [];
-    const labels = {
-      skjema_type: 'Type', navn: 'Navn', epost: 'E-post', telefon: 'Telefon',
-      firma: 'Firma', adresse: 'Adresse', bil: 'Bil', pris: 'Pris',
-      visningsdato: 'Visningsdato', unngaa: 'Unngå', overlay_tekst: 'Tekst i video',
-      musikk: 'Musikk', bildelink: 'Bildelink', logolink: 'Logolink',
-      notater: 'Notater', pitch: 'Selgerpitch', fokus_valgt: 'Fokus/effekter valgt',
-      'moblert-group': 'Møblert', 'varighet-group': 'Varighet', 'format-group': 'Format',
-      'bildestil-group': 'Bildestil', 'font-group': 'Font-farge', 'biltype-group': 'Biltype',
-      'stil-group': 'Stil', 'bil-format-group': 'Format', 'bil-logo-group': 'Logo i video',
-      'bildestil-group': 'Bildestil'
-    };
-    for (const [k, v] of Object.entries(obj)) {
-      if (k.startsWith('_') || !v) continue;
-      const label = labels[k] || k;
-      lines.push(`${label}: ${v}`);
-    }
-    obj['message'] = lines.join('\n');
 
-    try {
-      const res = await fetch('https://formspree.io/f/meenavwg', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(obj)
-      });
+    const seksjonerEiendom = [
+      { tittel: 'KONTAKT', felt: [
+        ['Navn', obj['navn']], ['E-post', obj['epost']], ['Telefon', obj['telefon']], ['Firma', obj['firma']]
+      ]},
+      { tittel: 'BOLIGEN', felt: [
+        ['Adresse', obj['adresse']], ['Møblert', obj['moblert-group']], ['Visningsdato', obj['visningsdato']]
+      ]},
+      { tittel: 'FOKUSOMRÅDER', felt: [
+        ['Prioriterte rom/områder', obj['fokus_valgt']], ['Unngå', obj['unngaa']]
+      ]},
+      { tittel: 'VIDEO-STIL', felt: [
+        ['Bildestil', obj['bildestil-group']], ['Varighet', obj['varighet-group']],
+        ['Format', obj['format-group']], ['Effekter', obj['fokus_valgt']]
+      ]},
+      { tittel: 'BRANDING & LYD', felt: [
+        ['Tekst i video', obj['overlay_tekst']], ['Font-farge', obj['font-group']], ['Musikk', obj['musikk']]
+      ]},
+      { tittel: 'BILDER & TILGANG', felt: [
+        ['Bildelink', obj['bildelink']], ['Logolink', obj['logolink']],
+        ['Hvor brukes videoen', obj['fokus_valgt']], ['Notater', obj['notater']]
+      ]}
+    ];
 
-      if (res.ok) {
-        document.getElementById('panel-' + type).classList.remove('active');
-        const msg = document.getElementById('successMsg');
-        msg.classList.add('show');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        btn.textContent = 'Noe gikk galt — prøv igjen';
-        btn.disabled = false;
-      }
-    } catch (err) {
-      btn.textContent = 'Noe gikk galt — prøv igjen';
-      btn.disabled = false;
-    }
-  }
-</script>
-</body>
-</html>
+    const seksjonerBil = [
+      { tittel: 'KONTAKT', felt: [
+        ['Navn', obj['navn']], ['E-post', obj['epost']], ['Telefon', obj['telefon']], ['Firma', obj['firma']]
+      ]},
+      { tittel: 'BILEN', felt: [
+        ['Bil', obj['bil']], ['Pris', obj['pris']], ['Type', obj['biltype-group']]
+      ]},
+      { tittel: 'HVA SKAL FREMHEVES', felt: [
+        ['Fokus', obj['fokus_valgt']], ['Selgerpitch', obj['pitch']]
+      ]},
+      { tittel: 'VIDEO-STIL', felt: [
+        ['Stemning', obj['stil-group']], ['Format', obj['bil-format-group']], ['Musikk', obj['musikk']]
+      ]},
+      { tittel: 'BRANDING & BILDER', felt: [
+        ['Teks
