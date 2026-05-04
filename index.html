@@ -441,6 +441,14 @@
           </div>
         </div>
         <div class="field">
+          <label>Stil på bildebruk</label>
+          <div class="radio-row" id="bildestil-group">
+            <div class="radio-pill selected" onclick="selectRadio(this, 'bildestil-group')">Vis mest av boligen (oversiktsbilder)</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'bildestil-group')">Detaljshots / nærbilde</div>
+            <div class="radio-pill" onclick="selectRadio(this, 'bildestil-group')">Blanding av begge</div>
+          </div>
+        </div>
+        <div class="field">
           <label>Spesielle effekter / stil-ønsker</label>
           <div class="check-grid">
             <div class="check-item" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span class="check-label">Møbler popper inn</span></div>
@@ -688,6 +696,29 @@
       const sel = row.querySelector('.radio-pill.selected');
       if (sel && row.id) obj[row.id] = sel.textContent.trim();
     });
+
+    // Lesbar e-post-oppsummering
+    const navn = obj['navn'] || '?';
+    const adresse = obj['adresse'] || obj['bil'] || '?';
+    obj['_subject'] = `Ny bestilling: ${obj['skjema_type']} — ${adresse} (${navn})`;
+    const lines = [];
+    const labels = {
+      skjema_type: 'Type', navn: 'Navn', epost: 'E-post', telefon: 'Telefon',
+      firma: 'Firma', adresse: 'Adresse', bil: 'Bil', pris: 'Pris',
+      visningsdato: 'Visningsdato', unngaa: 'Unngå', overlay_tekst: 'Tekst i video',
+      musikk: 'Musikk', bildelink: 'Bildelink', logolink: 'Logolink',
+      notater: 'Notater', pitch: 'Selgerpitch', fokus_valgt: 'Fokus/effekter valgt',
+      'moblert-group': 'Møblert', 'varighet-group': 'Varighet', 'format-group': 'Format',
+      'bildestil-group': 'Bildestil', 'font-group': 'Font-farge', 'biltype-group': 'Biltype',
+      'stil-group': 'Stil', 'bil-format-group': 'Format', 'bil-logo-group': 'Logo i video',
+      'bildestil-group': 'Bildestil'
+    };
+    for (const [k, v] of Object.entries(obj)) {
+      if (k.startsWith('_') || !v) continue;
+      const label = labels[k] || k;
+      lines.push(`${label}: ${v}`);
+    }
+    obj['message'] = lines.join('\n');
 
     try {
       const res = await fetch('https://formspree.io/f/meenavwg', {
