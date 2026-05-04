@@ -816,13 +816,19 @@
     lines.push(bar);
     lines.push('');
 
-    obj['message'] = lines.join('\n');
+    // Send KUN subject, message og reply-to. Slik unngår vi at Formspree
+    // lister opp alle rå-feltene (navn, epost, fokus_valgt, ...) i e-posten.
+    const payload = {
+      _subject: obj['_subject'],
+      _replyto: obj['epost'] || '',
+      message: lines.join('\n')
+    };
 
     try {
       const res = await fetch('https://formspree.io/f/meenavwg', {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(obj)
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
