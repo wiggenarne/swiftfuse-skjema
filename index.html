@@ -740,4 +740,48 @@
       { tittel: 'HVA SKAL FREMHEVES', felt: [
         ['Fokus', obj['fokus_valgt']], ['Selgerpitch', obj['pitch']]
       ]},
-      { tittel: 'VIDEO-STIL
+      { tittel: 'VIDEO-STIL', felt: [
+        ['Stemning', obj['stil-group']], ['Format', obj['bil-format-group']], ['Musikk', obj['musikk']]
+      ]},
+      { tittel: 'BRANDING & BILDER', felt: [
+        ['Tekst i video', obj['overlay_tekst']], ['Logo i video', obj['bil-logo-group']],
+        ['Hvor brukes videoen', obj['fokus_valgt']], ['Bildelink', obj['bildelink']],
+        ['Logolink', obj['logolink']], ['Notater', obj['notater']]
+      ]}
+    ];
+
+    const seksjoner = type === 'eiendom' ? seksjonerEiendom : seksjonerBil;
+    const lines = [];
+    seksjoner.forEach(s => {
+      const filt = s.felt.filter(([, v]) => v);
+      if (!filt.length) return;
+      lines.push('━━━ ' + s.tittel + ' ━━━');
+      filt.forEach(([k, v]) => lines.push(k + ': ' + v));
+      lines.push('');
+    });
+    obj['message'] = lines.join('\n');
+
+    try {
+      const res = await fetch('https://formspree.io/f/meenavwg', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(obj)
+      });
+
+      if (res.ok) {
+        document.getElementById('panel-' + type).classList.remove('active');
+        const msg = document.getElementById('successMsg');
+        msg.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        btn.textContent = 'Noe gikk galt — prøv igjen';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      btn.textContent = 'Noe gikk galt — prøv igjen';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
