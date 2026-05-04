@@ -709,56 +709,113 @@
 
     const seksjonerEiendom = [
       { tittel: 'KONTAKT', felt: [
-        ['Navn', obj['navn']], ['E-post', obj['epost']], ['Telefon', obj['telefon']], ['Firma', obj['firma']]
+        ['Navn', obj['navn']],
+        ['E-post', obj['epost']],
+        ['Telefon', obj['telefon']],
+        ['Meglerfirma / Privatperson', obj['firma']]
       ]},
       { tittel: 'BOLIGEN', felt: [
-        ['Adresse', obj['adresse']], ['Møblert', obj['moblert-group']], ['Visningsdato', obj['visningsdato']]
+        ['Adresse', obj['adresse']],
+        ['Er boligen møblert under filming?', obj['moblert-group']],
+        ['Visningsdato', obj['visningsdato']]
       ]},
       { tittel: 'FOKUSOMRÅDER', felt: [
-        ['Prioriterte rom/områder', obj['fokus_valgt']], ['Unngå', obj['unngaa']]
+        ['Hvilke rom/områder skal prioriteres?', obj['fokus_valgt']],
+        ['Er det noe som IKKE skal vises?', obj['unngaa']]
       ]},
       { tittel: 'VIDEO-STIL', felt: [
-        ['Bildestil', obj['bildestil-group']], ['Varighet', obj['varighet-group']],
-        ['Format', obj['format-group']], ['Effekter', obj['fokus_valgt']]
+        ['Ønsket varighet', obj['varighet-group']],
+        ['Format', obj['format-group']],
+        ['Stil på bildebruk', obj['bildestil-group']]
       ]},
       { tittel: 'BRANDING & LYD', felt: [
-        ['Tekst i video', obj['overlay_tekst']], ['Font-farge', obj['font-group']], ['Musikk', obj['musikk']]
+        ['Tekst som skal vises i videoen', obj['overlay_tekst']],
+        ['Font-farge / merkevare', obj['font-group']],
+        ['Musikk-ønsker', obj['musikk']]
       ]},
       { tittel: 'BILDER & TILGANG', felt: [
-        ['Bildelink', obj['bildelink']], ['Logolink', obj['logolink']],
-        ['Hvor brukes videoen', obj['fokus_valgt']], ['Notater', obj['notater']]
+        ['Link til bilder (Drive / Dropbox / WeTransfer)', obj['bildelink']],
+        ['Link til logo-fil', obj['logolink']],
+        ['Tilleggsinformasjon / spesielle ønsker', obj['notater']]
       ]}
     ];
 
     const seksjonerBil = [
       { tittel: 'KONTAKT', felt: [
-        ['Navn', obj['navn']], ['E-post', obj['epost']], ['Telefon', obj['telefon']], ['Firma', obj['firma']]
+        ['Navn', obj['navn']],
+        ['E-post', obj['epost']],
+        ['Telefon', obj['telefon']],
+        ['Forhandler / Firma', obj['firma']]
       ]},
       { tittel: 'BILEN', felt: [
-        ['Bil', obj['bil']], ['Pris', obj['pris']], ['Type', obj['biltype-group']]
+        ['Bilens merke, modell og årsmodell', obj['bil']],
+        ['Pris', obj['pris']],
+        ['Type bil', obj['biltype-group']]
       ]},
       { tittel: 'HVA SKAL FREMHEVES', felt: [
-        ['Fokus', obj['fokus_valgt']], ['Selgerpitch', obj['pitch']]
+        ['Fokus-punkter', obj['fokus_valgt']],
+        ['Hva er det BESTE med denne bilen? (selgerpitch)', obj['pitch']]
       ]},
       { tittel: 'VIDEO-STIL', felt: [
-        ['Stemning', obj['stil-group']], ['Format', obj['bil-format-group']], ['Musikk', obj['musikk']]
+        ['Stemning / stil', obj['stil-group']],
+        ['Format', obj['bil-format-group']],
+        ['Musikk-ønsker', obj['musikk']]
       ]},
       { tittel: 'BRANDING & BILDER', felt: [
-        ['Tekst i video', obj['overlay_tekst']], ['Logo i video', obj['bil-logo-group']],
-        ['Hvor brukes videoen', obj['fokus_valgt']], ['Bildelink', obj['bildelink']],
-        ['Logolink', obj['logolink']], ['Notater', obj['notater']]
+        ['Tekst som skal vises i videoen', obj['overlay_tekst']],
+        ['Logo / branding i video?', obj['bil-logo-group']],
+        ['Link til bilder / video-klipp', obj['bildelink']],
+        ['Link til logo-fil', obj['logolink']],
+        ['Andre ønsker eller info', obj['notater']]
       ]}
     ];
 
     const seksjoner = type === 'eiendom' ? seksjonerEiendom : seksjonerBil;
+    const W = 62;
+    const bar = '═'.repeat(W);
+    const sub = '─'.repeat(W);
+    const dateStr = new Date().toLocaleString('no-NO', {
+      day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+
     const lines = [];
+    lines.push('');
+    lines.push(bar);
+    lines.push('  SWIFT FUSE AS  —  NY BESTILLING');
+    lines.push(bar);
+    lines.push('');
+    lines.push('  Type:       ' + obj['skjema_type']);
+    lines.push('  Mottatt:    ' + dateStr);
+    lines.push('  Fra:        ' + (obj['navn'] || '—'));
+    if (type === 'eiendom') {
+      lines.push('  Adresse:    ' + (obj['adresse'] || '—'));
+    } else {
+      lines.push('  Bil:        ' + (obj['bil'] || '—'));
+    }
+    lines.push('');
+    lines.push('');
+
     seksjoner.forEach(s => {
       const filt = s.felt.filter(([, v]) => v);
       if (!filt.length) return;
-      lines.push('━━━ ' + s.tittel + ' ━━━');
-      filt.forEach(([k, v]) => lines.push(k + ': ' + v));
+      lines.push(sub);
+      lines.push('  ' + s.tittel);
+      lines.push(sub);
+      lines.push('');
+      filt.forEach(([k, v]) => {
+        lines.push('  ' + k);
+        lines.push('     ▸  ' + v);
+        lines.push('');
+      });
       lines.push('');
     });
+
+    lines.push(bar);
+    lines.push('  Arne tar kontakt innen 24 timer.');
+    lines.push(bar);
+    lines.push('');
+
     obj['message'] = lines.join('\n');
 
     try {
