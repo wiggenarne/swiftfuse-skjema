@@ -502,8 +502,8 @@
           <input type="url" name="bildelink" placeholder="https://drive.google.com/...">
         </div>
         <div class="field">
-          <label>Link til logo-fil (PNG/SVG med transparent bakgrunn)</label>
-          <input type="url" name="logolink" placeholder="https://drive.google.com/... eller dropp om du ikke har">
+          <label>Link til logo-fil — valgfritt (PNG/SVG med transparent bakgrunn)</label>
+          <input type="text" name="logolink" placeholder="https://drive.google.com/... (ikke påkrevd)">
         </div>
         <div class="field">
           <label>Tilleggsinformasjon / spesielle ønsker</label>
@@ -637,8 +637,8 @@
           <input type="url" name="bildelink" placeholder="https://drive.google.com/...">
         </div>
         <div class="field">
-          <label>Link til logo-fil (PNG/SVG med transparent bakgrunn)</label>
-          <input type="url" name="logolink" placeholder="https://drive.google.com/... eller dropp om du ikke har">
+          <label>Link til logo-fil — valgfritt (PNG/SVG med transparent bakgrunn)</label>
+          <input type="text" name="logolink" placeholder="https://drive.google.com/... (ikke påkrevd)">
         </div>
         <div class="field">
           <label>Andre ønsker eller info</label>
@@ -663,9 +663,12 @@
   }
 
   function toggleCheck(el) {
-    el.classList.toggle('checked');
-    const cb = el.querySelector('input[type="checkbox"]');
-    cb.checked = !cb.checked;
+    // Finn alltid parent .check-item
+    const item = el.closest('.check-item');
+    if (!item) return;
+    item.classList.toggle('checked');
+    const cb = item.querySelector('input[type="checkbox"]');
+    cb.checked = item.classList.contains('checked');
   }
 
   function selectRadio(el, groupId) {
@@ -736,7 +739,4 @@
         ['Fokus', obj['fokus_valgt']], ['Selgerpitch', obj['pitch']]
       ]},
       { tittel: 'VIDEO-STIL', felt: [
-        ['Stemning', obj['stil-group']], ['Format', obj['bil-format-group']], ['Musikk', obj['musikk']]
-      ]},
-      { tittel: 'BRANDING & BILDER', felt: [
-        ['Teks
+        ['Stemning', obj['stil-gr
